@@ -30,11 +30,12 @@ public fun HttpClientConfig<*>.addDefaultResponseValidation() {
             }
 
             val exceptionResponse = exceptionCall.response
+            val exceptionResponseText = exceptionResponse.readText()
             when (statusCode) {
-                in 300..399 -> throw RedirectResponseException(exceptionResponse)
-                in 400..499 -> throw ClientRequestException(exceptionResponse)
-                in 500..599 -> throw ServerResponseException(exceptionResponse)
-                else -> throw ResponseException(exceptionResponse)
+                in 300..399 -> throw RedirectResponseException(exceptionResponse, exceptionResponseText)
+                in 400..499 -> throw ClientRequestException(exceptionResponse, exceptionResponseText)
+                in 500..599 -> throw ServerResponseException(exceptionResponse, exceptionResponseText)
+                else -> throw ResponseException(exceptionResponse, exceptionResponseText)
             }
         }
     }
@@ -45,17 +46,21 @@ public fun HttpClientConfig<*>.addDefaultResponseValidation() {
  * @param [response]: origin response
  */
 public open class ResponseException(
-    response: HttpResponse
-) : IllegalStateException("Bad response: $response") {
+    response: HttpResponse,
+    cachedResponseText: String
+) : IllegalStateException("Bad response: $response (response text: \"$cachedResponseText\")") {
+
     private val _response: HttpResponse? by threadLocal(response)
-    public val response: HttpResponse get() = _response ?: error("Failed to access response from a different native thread")
+    public val response: HttpResponse
+        get() = _response ?: error("Failed to access response from a different native thread")
 }
 
 /**
  * Unhandled redirect exception.
  */
 @Suppress("KDocMissingDocumentation")
-public class RedirectResponseException(response: HttpResponse) : ResponseException(response) {
+public class RedirectResponseException(response: HttpResponse, cachedResponseText: String) :
+    ResponseException(response, cachedResponseText) {
     override val message: String? = "Unhandled redirect: ${response.call.request.url}. Status: ${response.status}"
 }
 
@@ -64,8 +69,9 @@ public class RedirectResponseException(response: HttpResponse) : ResponseExcepti
  */
 @Suppress("KDocMissingDocumentation")
 public class ServerResponseException(
-    response: HttpResponse
-) : ResponseException(response) {
+    response: HttpResponse,
+    cachedResponseText: String
+) : ResponseException(response, cachedResponseText) {
     override val message: String? = "Server error(${response.call.request.url}: ${response.status}."
 }
 
@@ -74,7 +80,8 @@ public class ServerResponseException(
  */
 @Suppress("KDocMissingDocumentation")
 public class ClientRequestException(
-    response: HttpResponse
-) : ResponseException(response) {
+    response: HttpResponse,
+    cachedResponseText: String
+) : ResponseException(response, cachedResponseText) {
     override val message: String? = "Client request(${response.call.request.url}) invalid: ${response.status}"
 }
