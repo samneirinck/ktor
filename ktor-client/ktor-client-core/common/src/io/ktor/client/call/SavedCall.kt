@@ -15,8 +15,41 @@ import io.ktor.utils.io.core.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
+internal open class SavedHttpCall(client: HttpClient) : HttpClientCall(client) {
+    /**
+     * Equals [HttpResponse.content] in case [receive] was never called before or equals it's copy if [receive] was
+     * already called at least once.
+     * */
+    private var responseContent: ByteReadChannel? = null
 
-internal class SavedHttpCall(client: HttpClient) : HttpClientCall(client)
+    /**
+     * Saves [responseContent] and returns it's copy that is safe to use without loosing [responseContent] data.
+     * */
+    private suspend fun copyContent(): ByteReadChannel {
+        if (responseContent == null) {
+            responseContent = response.content
+        }
+        val contentBytes = responseContent!!.toByteArray()
+        responseContent = ByteReadChannel(contentBytes)
+        return ByteReadChannel(contentBytes)
+    }
+
+    // Allows multiple calls
+    override suspend fun receive(info: TypeInfo): Any {
+        try {
+            if (response.instanceOf(info.type)) return response
+
+            val responseData = attributes.getOrNull(CustomResponse) ?: copyContent()
+
+            return receiveFromData(info, responseData)
+        } catch (cause: Throwable) {
+            response.cancel("Receive failed", cause)
+            throw cause
+        } finally {
+            response.complete()
+        }
+    }
+}
 
 internal class SavedHttpRequest(
     override val call: SavedHttpCall, origin: HttpRequest
@@ -51,6 +84,7 @@ public suspend fun HttpClientCall.save(): HttpClientCall {
 
     return SavedHttpCall(currentClient).also { result ->
         val content = response.content.readRemaining()
+
         result.request = SavedHttpRequest(result, request)
         result.response = SavedHttpResponse(result, content.readBytes(), response)
     }

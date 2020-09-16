@@ -37,7 +37,7 @@ internal fun HttpClientCall(
 public open class HttpClientCall internal constructor(
     client: HttpClient
 ) : CoroutineScope {
-    private val received = atomic(false)
+    protected val received: AtomicBoolean = atomic(false)
 
     public val client: HttpClient? by threadLocal(client)
 
@@ -61,30 +61,39 @@ public open class HttpClientCall internal constructor(
         internal set
 
     /**
+     * Tries to receive the payload of the [responseData] as a specific expected type provided in [info].
+     *
+     * @throws NoTransformationFoundException If no transformation is found for the type [info].
+     * */
+    protected suspend fun receiveFromData(info: TypeInfo, responseData: Any): Any {
+        val subject = HttpResponseContainer(info, responseData)
+        val currentClient = client ?: error("Failed to receive call($this) in different native thread.")
+
+        val result = currentClient.responsePipeline.execute(this, subject).response
+        if (!result.instanceOf(info.type)) {
+            val from = result::class
+            val to = info.type
+            throw NoTransformationFoundException(response, from, to)
+        }
+
+        return result
+    }
+
+    /**
      * Tries to receive the payload of the [response] as a specific expected type provided in [info].
      * Returns [response] if [info] corresponds to [HttpResponse].
      *
      * @throws NoTransformationFoundException If no transformation is found for the type [info].
      * @throws DoubleReceiveException If already called [receive].
      */
-    public suspend fun receive(info: TypeInfo): Any {
+    public open suspend fun receive(info: TypeInfo): Any {
         try {
             if (response.instanceOf(info.type)) return response
             if (!received.compareAndSet(false, true)) throw DoubleReceiveException(this)
 
             val responseData = attributes.getOrNull(CustomResponse) ?: response.content
 
-            val subject = HttpResponseContainer(info, responseData)
-            val currentClient = client ?: error("Failed to receive call($this) in different native thread.")
-
-            val result = currentClient.responsePipeline.execute(this, subject).response
-            if (!result.instanceOf(info.type)) {
-                val from = result::class
-                val to = info.type
-                throw NoTransformationFoundException(response, from, to)
-            }
-
-            return result
+            return receiveFromData(info, responseData)
         } catch (cause: Throwable) {
             response.cancel("Receive failed", cause)
             throw cause

@@ -6,8 +6,8 @@ package io.ktor.client.features
 
 import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.util.*
 import io.ktor.client.statement.*
+import io.ktor.util.*
 import io.ktor.utils.io.concurrent.*
 import kotlin.native.concurrent.*
 
@@ -48,7 +48,7 @@ public fun HttpClientConfig<*>.addDefaultResponseValidation() {
 public open class ResponseException(
     response: HttpResponse,
     cachedResponseText: String
-) : IllegalStateException("Bad response: $response (response text: \"$cachedResponseText\")") {
+) : IllegalStateException("Bad response: $response. Text: \"$cachedResponseText\"") {
 
     private val _response: HttpResponse? by threadLocal(response)
     public val response: HttpResponse
@@ -61,7 +61,7 @@ public open class ResponseException(
 @Suppress("KDocMissingDocumentation")
 public class RedirectResponseException(response: HttpResponse, cachedResponseText: String) :
     ResponseException(response, cachedResponseText) {
-    override val message: String? = "Unhandled redirect: ${response.call.request.url}. Status: ${response.status}"
+    override val message: String? = "Unhandled redirect: ${response.call.request.url}. Status: ${response.status}. Text: \"$cachedResponseText\""
 }
 
 /**
@@ -72,7 +72,7 @@ public class ServerResponseException(
     response: HttpResponse,
     cachedResponseText: String
 ) : ResponseException(response, cachedResponseText) {
-    override val message: String? = "Server error(${response.call.request.url}: ${response.status}."
+    override val message: String? = "Server error(${response.call.request.url}: ${response.status}. Text: \"$cachedResponseText\""
 }
 
 /**
@@ -83,5 +83,5 @@ public class ClientRequestException(
     response: HttpResponse,
     cachedResponseText: String
 ) : ResponseException(response, cachedResponseText) {
-    override val message: String? = "Client request(${response.call.request.url}) invalid: ${response.status}"
+    override val message: String? = "Client request(${response.call.request.url}) invalid: ${response.status}. Text: \"$cachedResponseText\""
 }
