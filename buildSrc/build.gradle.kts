@@ -53,4 +53,5 @@ sourceSets.main {
 dependencies {
     implementation(kotlin("gradle-plugin", version("kotlin")))
     implementation(kotlin("compiler-embeddable", version("kotlin")))
+    implementation(kotlin("reflect", version("kotlin")))
 }
