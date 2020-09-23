@@ -4,8 +4,8 @@ apply plugin: "kotlinx-atomicfu"
 
 kotlin {
     targets {
-        if (project.ext.ideaActive) {
-            fromPreset(project.ext.ideaPreset, 'darwin')
+        if (UtilityKt.isIdeaActive) {
+            fromPreset(UtilityKt.getIdeaPreset(presets), 'darwin')
         } else {
             fromPreset(presets.iosArm64, 'iosArm64')
             fromPreset(presets.iosArm32, 'iosArm32')
@@ -27,7 +27,7 @@ kotlin {
         darwinMain { dependsOn commonMain }
         darwinTest
 
-        if (!project.ext.ideaActive) {
+        if (!UtilityKt.isIdeaActive) {
             configure([iosArm32Main, iosArm64Main, iosX64Main, macosX64Main, tvosArm64Main, tvosX64Main, watchosArm32Main, watchosArm64Main, watchosX86Main]) {
                 dependsOn darwinMain
             }

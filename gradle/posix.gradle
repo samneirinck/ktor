@@ -49,8 +49,8 @@ if (host == 'windows' && skipMingw) return
 
 kotlin {
     targets {
-        if (project.ext.ideaActive) {
-            fromPreset(project.ext.ideaPreset, 'posix')
+        if (UtilityKt.isIdeaActive) {
+            fromPreset(UtilityKt.getIdeaPreset(presets), 'posix')
             project.ext.nativeTargets = [posix]
         } else {
             fromPreset(presets.linuxX64, 'linuxX64')
@@ -118,7 +118,7 @@ kotlin {
         posixTest
         posixMain { dependsOn commonMain }
 
-        if (!project.ext.ideaActive) {
+        if (!UtilityKt.isIdeaActive) {
             configure(project.ext.nativeTargets.collect { getByName(it.name + 'Main') }) {
                 dependsOn posixMain
             }

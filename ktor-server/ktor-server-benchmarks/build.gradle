@@ -1,4 +1,4 @@
-if (!project.ext.ideaActive) {
+if (!UtilityKt.isIdeaActive) {
     apply plugin: 'me.champeau.gradle.jmh'
     apply plugin: 'kotlin-allopen'
 
@@ -9,14 +9,14 @@ if (!project.ext.ideaActive) {
 
 kotlin {
     targets {
-        if (project.ext.ideaActive) {
+        if (UtilityKt.isIdeaActive) {
             fromPreset(presets.jvm, 'jmh')
         } else {
             fromPreset(presets.jvmWithJava, 'jvmWithJava')
         }
     }
 
-    if (project.ext.ideaActive) {
+    if (UtilityKt.isIdeaActive) {
         sourceSets.jmhMain {
             kotlin.srcDir 'src/jmh/kotlin'
 
@@ -38,7 +38,7 @@ kotlin {
     }
 }
 
-if (!project.ext.ideaActive) {
+if (!UtilityKt.isIdeaActive) {
     description = ''
     dependencies {
         api group: 'org.openjdk.jmh', name: 'jmh-core', version: jmh_version

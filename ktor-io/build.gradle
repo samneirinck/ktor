@@ -27,7 +27,7 @@ kotlin.sourceSets {
     }
 }
 
-if (!project.ext.ideaActive) {
+if (!UtilityKt.isIdeaActive) {
     apply from: "$rootDir/gradle/interop-as-source-set-klib.gradle"
     afterEvaluate {
         registerInteropAsSourceSetOutput("bits", kotlin.sourceSets.bitsMain)

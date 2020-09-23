@@ -1,9 +1,7 @@
-import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
 description = "Ktor network utilities"
 
-val ideaActive: Boolean by project.extra
 val nativeCompilations: List<KotlinNativeCompilation> by project.extra
 
 kotlin {
@@ -22,7 +20,7 @@ kotlin {
             }
         }
 
-        if (!ideaActive && findByName("posixMain") != null) {
+        if (!isIdeaActive && findByName("posixMain") != null) {
             val networkInterop by creating
             getByName("posixMain").dependsOn(networkInterop)
             apply(from = "$rootDir/gradle/interop-as-source-set-klib.gradle")

@@ -13,8 +13,6 @@ val kotlin_version: String by project.extra
 val logback_version: String by project.extra
 val coroutines_version: String by project
 
-val ideaActive: Boolean by project.extra
-
 plugins {
     id("kotlinx-serialization")
 }
@@ -87,7 +85,7 @@ kotlin.sourceSets {
         }
     }
 
-    if (!ideaActive) {
+    if (!isIdeaActive) {
         listOf("linuxX64Test", "mingwX64Test", "macosX64Test").map { getByName(it) }.forEach {
             it.dependencies {
                 api(project(":ktor-client:ktor-client-curl"))
@@ -139,7 +137,7 @@ val testTasks = mutableListOf(
     "darwinTest"
 )
 
-if (!ideaActive) {
+if (!isIdeaActive) {
     testTasks += listOf(
         "macosX64Test",
         "linuxX64Test",

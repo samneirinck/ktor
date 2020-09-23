@@ -1,5 +1,3 @@
-val ideaActive: Boolean by project.extra
-
 kotlin.sourceSets {
     commonMain {
         dependencies {
@@ -19,7 +17,7 @@ kotlin.sourceSets {
             implementation(project(":ktor-client:ktor-client-apache"))
 //            implementation(project(":ktor-client:ktor-client-jetty"))
         }
-//        if (!ideaActive) {
+//        if (!isIdeaActive) {
 //            configure(listOf(getByName("macosX64Test"), getByName("iosX64Test"))) {
 //                dependencies {
 //                    implementation(project(":ktor-client:ktor-client-ios"))

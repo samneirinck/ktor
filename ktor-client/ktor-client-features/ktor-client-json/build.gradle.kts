@@ -1,7 +1,5 @@
 description = "Ktor client JSON support"
 
-val ideaActive: Boolean by project.extra
-
 plugins {
     id("kotlinx-serialization")
 }
@@ -42,7 +40,7 @@ kotlin {
             }
         }
 
-//        if (!ideaActive) {
+//        if (!isIdeaActive) {
 //            configure(listOf(getByName("macosX64Test"), getByName("iosX64Test"))) {
 //                dependencies {
 //                    implementation(project(":ktor-client:ktor-client-ios"))

@@ -1,15 +1,14 @@
 assemble.doLast {
     copy {
-        if (project.ext.isLinuxHost) {
+        if (UtilityKt.isLinuxHost) {
             from "build/classes/kotlin/linuxX64"
         }
-        if (project.ext.isMacosHost) {
+        if (UtilityKt.isMacosHost) {
             from "build/classes/kotlin/macosX64"
         }
-        if (project.ext.isWinHost) {
+        if (UtilityKt.isWinHost) {
             from "build/classes/kotlin/mingwX64"
         }
-
         into "build/classes/kotlin/posix"
     }
 }
