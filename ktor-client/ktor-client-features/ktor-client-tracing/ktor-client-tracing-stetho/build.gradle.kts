@@ -5,8 +5,6 @@
 apply(from = "../../../../gradle/experimental.gradle")
 
 val android_stetho_version: String by project.extra
-val experimentalAnnotations: List<String> by project.extra
-
 repositories {
     google()
 }
@@ -39,12 +37,6 @@ kotlin {
                 implementation(kotlin("test-junit"))
                 implementation("org.mockito:mockito-core:3.3.3")
             }
-        }
-    }
-
-    sourceSets.all {
-        experimentalAnnotations.forEach { annotation ->
-            languageSettings.useExperimentalAnnotation(annotation)
         }
     }
 }

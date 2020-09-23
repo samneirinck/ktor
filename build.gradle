@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.testing.internal.KotlinTestReport
 import org.jetbrains.kotlin.konan.target.HostManager
 
 buildscript {
@@ -68,7 +69,6 @@ ext.configuredVersion = project.hasProperty("releaseVersion") ? project.releaseV
 ext.globalM2 = "$buildDir/m2"
 ext.publishLocal = project.hasProperty("publishLocal")
 
-apply from: "gradle/experimental.gradle"
 apply from: 'gradle/verifier.gradle'
 
 /**
@@ -112,6 +112,9 @@ def disabledExplicitApiModeProjects = [
 
 apply from: 'gradle/compatibility.gradle'
 
+def bintrayUser = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER') ?: ""
+def bintrayApiKey = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY') ?: ""
+
 allprojects {
     group = "io.ktor"
     version = configuredVersion
@@ -142,16 +145,16 @@ allprojects {
         maven {
             url "https://dl.bintray.com/kotlin/kotlinx"
             credentials {
-                username = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER') ?: ""
-                password = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY') ?: ""
+                username = bintrayUser
+                password = bintrayApiKey
             }
         }
         maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
         maven {
             url "https://kotlin.bintray.com/kotlin-dev"
             credentials {
-                username = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER') ?: ""
-                password = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY') ?: ""
+                username = bintrayUser
+                password = bintrayApiKey
             }
         }
         jcenter()
@@ -164,6 +167,7 @@ allprojects {
     apply plugin: "kotlin-multiplatform"
 
     apply from: rootProject.file("gradle/utility.gradle")
+
     platforms.each { platform ->
         if (projectNeedsPlatform(project, platform)) {
             configure([it]) {
@@ -175,7 +179,7 @@ allprojects {
     configurations { testOutput }
 
     kotlin {
-        if (!disabledExplicitApiModeProjects.contains(project.name)){
+        if (!disabledExplicitApiModeProjects.contains(project.name)) {
             explicitApi()
         }
 
@@ -186,15 +190,6 @@ allprojects {
 
             kotlin.srcDirs = ["$platform/$srcDir"]
             resources.srcDirs = ["$platform/${resourcesPrefix}resources"]
-
-            languageSettings {
-                progressiveMode = true
-                experimentalAnnotations.each { useExperimentalAnnotation(it) }
-
-                if (project.path.startsWith(":ktor-server:ktor-server") && project.name != "ktor-server-core") {
-                    useExperimentalAnnotation("io.ktor.server.engine.EngineAPI")
-                }
-            }
         }
     }
 
@@ -204,7 +199,22 @@ allprojects {
     }
 }
 
-task rootAllTest(type: org.jetbrains.kotlin.gradle.testing.internal.KotlinTestReport) {
+allprojects {
+    kotlin {
+        sourceSets.all {
+            languageSettings {
+                progressiveMode = true
+                ExperimentalKt.EXPERIMENTAL_ANNOTATIONS.forEach { useExperimentalAnnotation(it) }
+
+                if (project.path.startsWith(":ktor-server:ktor-server") && project.name != "ktor-server-core") {
+                    useExperimentalAnnotation("io.ktor.server.engine.EngineAPI")
+                }
+            }
+        }
+    }
+}
+
+task rootAllTest(type: KotlinTestReport) {
     def rootAllTest = it
     destinationDir = new File(project.buildDir, "reports/tests/rootAllTest")
 

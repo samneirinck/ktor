@@ -105,13 +105,3 @@ if (!project.ext.ideaActive) {
         }
     }
 }
-
-kotlin {
-    sourceSets.all {
-        languageSettings {
-            progressiveMode = true
-            experimentalAnnotations.each { useExperimentalAnnotation(it) }
-            useExperimentalAnnotation("io.ktor.server.engine.EngineAPI")
-        }
-    }
-}
