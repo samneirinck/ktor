@@ -51,8 +51,7 @@ public open class ByteChannelSequentialJVM(
     private suspend fun writeFullySuspend(src: ByteBuffer) {
         while (src.hasRemaining()) {
             awaitAtLeastNBytesAvailableForWrite(1)
-            val count = tryWriteAvailable(src)
-            afterWrite(count)
+            tryWriteAvailable(src)
         }
     }
 
@@ -60,7 +59,7 @@ public open class ByteChannelSequentialJVM(
         val srcRemaining = src.remaining()
         val availableForWrite = availableForWrite
 
-        return when {
+        val result: Int = when {
             closed -> throw closedCause ?: ClosedSendChannelException("Channel closed for write")
             srcRemaining == 0 -> 0
             srcRemaining <= availableForWrite -> {
@@ -76,6 +75,9 @@ public open class ByteChannelSequentialJVM(
                 availableForWrite
             }
         }
+
+        afterWrite(result)
+        return result
     }
 
     override suspend fun readAvailable(dst: ByteBuffer): Int {

@@ -5,18 +5,36 @@ import io.ktor.utils.io.*
 import io.ktor.utils.io.jvm.javaio.*
 import io.ktor.utils.io.core.*
 import io.ktor.utils.io.pool.*
+import kotlinx.coroutines.debug.junit4.*
+import org.junit.*
 import java.io.*
 import java.nio.*
 import java.util.*
 import kotlin.test.*
+import kotlin.test.Test
 
 class ToByteReadChannelTest {
+
+//    @get:Rule
+//    val timeout = CoroutinesTimeout.seconds(10)
+
     @Test
     fun testEmpty() = runBlocking<Unit> {
         val channel = ByteArrayInputStream(ByteArray(0)).toByteReadChannel()
         channel.readRemaining().use { pkt ->
             assertTrue { pkt.isEmpty }
         }
+    }
+
+    @Test
+    fun testCloseAfterStartReading() = runBlocking<Unit> {
+        val channel = ByteChannel()
+
+        launch(Dispatchers.Unconfined) {
+            channel.readRemaining()
+        }
+
+        channel.close()
     }
 
     @Test

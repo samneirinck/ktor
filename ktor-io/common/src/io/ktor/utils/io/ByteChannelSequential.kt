@@ -498,7 +498,11 @@ public abstract class ByteChannelSequentialBase(
 
     internal suspend fun readAvailable(dst: Buffer): Int = when {
         closedCause != null -> throw closedCause!!
-        readable.canRead() -> {
+        availableForRead > 0 -> {
+            if (flushBuffer.isNotEmpty) {
+                prepareFlushedBytes()
+            }
+
             val size = minOf(dst.writeRemaining.toLong(), readable.remaining).toInt()
             readable.readFully(dst, size)
             afterRead(size)
@@ -536,7 +540,11 @@ public abstract class ByteChannelSequentialBase(
     }
 
     override suspend fun readAvailable(dst: ByteArray, offset: Int, length: Int): Int = when {
-        readable.canRead() -> {
+        availableForRead > 0 -> {
+            if (flushBuffer.isNotEmpty) {
+                prepareFlushedBytes()
+            }
+
             val size = minOf(length.toLong(), readable.remaining).toInt()
             readable.readFully(dst, offset, size)
             afterRead(size)
@@ -749,11 +757,12 @@ public abstract class ByteChannelSequentialBase(
             readable.release()
             writable.release()
             flushBuffer.release()
+            slot.cancel(cause)
         } else {
             flush()
+            slot.terminate()
         }
 
-        slot.cancel(cause)
         return true
     }
 
