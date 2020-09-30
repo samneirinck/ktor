@@ -707,7 +707,7 @@ public abstract class ByteChannelSequentialBase(
         }
     }
 
-    override suspend fun <A : Appendable> readUTF8LineTo(out: A, limit: Int): Boolean {
+    final override suspend fun <A : Appendable> readUTF8LineTo(out: A, limit: Int): Boolean {
         if (isClosedForRead) {
             val cause = closedCause
             if (cause != null) {

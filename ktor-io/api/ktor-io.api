@@ -73,7 +73,7 @@ public abstract class io/ktor/utils/io/ByteChannelSequentialBase : io/ktor/utils
 	public fun readShort (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun readSuspendableSession (Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun readUTF8Line (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun readUTF8LineTo (Ljava/lang/Appendable;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun readUTF8LineTo (Ljava/lang/Appendable;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun request (I)Lio/ktor/utils/io/core/IoBuffer;
 	protected final fun setClosed (Z)V
 	public fun setReadByteOrder (Lio/ktor/utils/io/core/ByteOrder;)V
@@ -95,7 +95,7 @@ public abstract class io/ktor/utils/io/ByteChannelSequentialBase : io/ktor/utils
 	public fun writeSuspendSession (Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/ktor/utils/io/ByteChannelSequentialJVM : io/ktor/utils/io/ByteChannelSequentialBase {
+public class io/ktor/utils/io/ByteChannelSequentialJVM : io/ktor/utils/io/ByteChannelSequentialBase {
 	public fun <init> (Lio/ktor/utils/io/core/IoBuffer;Z)V
 	public fun attachJob (Lkotlinx/coroutines/Job;)V
 	public synthetic fun consumeEachBufferRange (Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
