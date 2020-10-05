@@ -37,7 +37,7 @@ internal fun HttpClientCall(
 public open class HttpClientCall internal constructor(
     client: HttpClient
 ) : CoroutineScope {
-    protected val received: AtomicBoolean = atomic(false)
+    internal val received: AtomicBoolean = atomic(false)
 
     public val client: HttpClient? by threadLocal(client)
 
@@ -65,7 +65,7 @@ public open class HttpClientCall internal constructor(
      *
      * @throws NoTransformationFoundException If no transformation is found for the type [info].
      * */
-    protected suspend fun receiveFromData(info: TypeInfo, responseData: Any): Any {
+    internal suspend fun receiveFromData(info: TypeInfo, responseData: Any): Any {
         val subject = HttpResponseContainer(info, responseData)
         val currentClient = client ?: error("Failed to receive call($this) in different native thread.")
 
