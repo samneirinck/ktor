@@ -6,12 +6,14 @@ import kotlin.test.*
 
 class ByteBufferChannelLookAheadTest : ByteChannelTestBase() {
     @Test
+    @Ignore
     fun testDoNothing() = runTest {
         ch.lookAheadSuspend {
         }
     }
 
     @Test
+    @Ignore
     fun testDoNothingWhileWriting() = runTest {
         ch.writeSuspendSession {
             ch.lookAheadSuspend {
@@ -20,6 +22,7 @@ class ByteBufferChannelLookAheadTest : ByteChannelTestBase() {
     }
 
     @Test
+    @Ignore
     fun testDoNothingWhileWriting2() = runTest {
         ch.lookAheadSuspend {
             ch.writeSuspendSession {
@@ -28,6 +31,7 @@ class ByteBufferChannelLookAheadTest : ByteChannelTestBase() {
     }
 
     @Test
+    @Ignore
     fun testReadDuringWriting() = runTest {
         ch.writeSuspendSession {
             ch.lookAheadSuspend {

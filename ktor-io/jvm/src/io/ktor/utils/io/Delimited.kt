@@ -38,19 +38,33 @@ public suspend fun ByteReadChannel.readUntilDelimiter(delimiter: ByteBuffer, dst
     else readUntilDelimiterSuspend(delimiter, dst, copied)
 }
 
+/**
+ * Skip all bytes until [delimiter] in the current channel. The [delimiter] will also be skipped.
+ *
+ * @throws IOException if the delimiter isn't't found.
+ */
 public suspend fun ByteReadChannel.skipDelimiter(delimiter: ByteBuffer) {
     require(delimiter.hasRemaining())
 
     var found = false
 
-    lookAhead {
-        found = tryEnsureDelimiter(delimiter) == delimiter.remaining()
+    var offset = 0
+    while (!found && !isClosedForRead) {
+        read {
+            it.indexOfPartial(delimiter)
+            val count = it.startsWith(delimiter, offset)
+        }
     }
+
+//    lookAhead {
+//        found = tryEnsureDelimiter(delimiter) == delimiter.remaining()
+//    }
 
     if (!found) {
         skipDelimiterSuspend(delimiter)
     }
 }
+
 
 private suspend fun ByteReadChannel.skipDelimiterSuspend(delimiter: ByteBuffer) {
     lookAheadSuspend {

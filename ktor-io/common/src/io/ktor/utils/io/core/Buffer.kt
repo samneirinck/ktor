@@ -87,10 +87,10 @@ public open class Buffer(public val memory: Memory) {
         if (count == 0) return
 
         val newReadPosition = readPosition + count
+        readPosition = newReadPosition
         if (count < 0 || newReadPosition > writePosition) {
             discardFailed(count, readRemaining)
         }
-        readPosition = newReadPosition
     }
 
     @Deprecated("Use discardExact instead.", level = DeprecationLevel.ERROR)

@@ -60,12 +60,9 @@ public interface ReadSession {
      * @return buffer for the requested range or `null` if it is impossible to provide such a buffer view
      * @throws Throwable if the channel has been closed with an exception or cancelled
      */
-    @Suppress("DEPRECATION")
     public fun request(atLeast: Int = 1): IoBuffer?
 }
 
-@Suppress("DEPRECATION")
-@Deprecated("Use read { } instead.")
 public interface SuspendableReadSession : ReadSession {
     /**
      * Suspend until [atLeast] bytes become available or end of stream encountered (possibly due to exceptional close)
@@ -127,21 +124,20 @@ private suspend fun SuspendableReadSession.requestBufferSuspend(desiredSize: Int
 
 private suspend fun ByteReadChannel.requestBufferFallback(desiredSize: Int): ChunkBuffer {
     val chunk = ChunkBuffer.Pool.borrow()
-    val copied =
-        peekTo(chunk.memory, chunk.writePosition.toLong(), 0L, desiredSize.toLong(), chunk.writeRemaining.toLong())
+    val copied = peekTo(
+        chunk.memory, chunk.writePosition.toLong(), 0L, desiredSize.toLong(), chunk.writeRemaining.toLong()
+    )
     chunk.commitWritten(copied.toInt())
 
     return chunk
 }
 
 internal interface HasReadSession {
-    @Suppress("DEPRECATION")
-    public fun startReadSession(): SuspendableReadSession
+    fun startReadSession(): SuspendableReadSession
 
-    public fun endReadSession()
+    fun endReadSession()
 }
 
-@Suppress("DEPRECATION", "NOTHING_TO_INLINE")
 private inline fun ByteReadChannel.readSessionFor(): SuspendableReadSession? = when {
     this is HasReadSession -> startReadSession()
     else -> null

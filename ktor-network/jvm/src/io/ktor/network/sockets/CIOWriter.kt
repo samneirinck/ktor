@@ -73,7 +73,7 @@ internal fun CoroutineScope.attachForWritingDirectImpl(
 
     selectable.interestOp(SelectInterest.WRITE, false)
     try {
-        while (true) {
+        while (!channel.isClosedForRead) {
             channel.read { memory, start, end ->
                 val buffer = memory.buffer.apply {
                     position(start.toInt())

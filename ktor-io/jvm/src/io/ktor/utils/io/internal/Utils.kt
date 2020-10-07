@@ -19,26 +19,27 @@ internal inline fun <reified Owner : Any, reified T> updater(p: KProperty1<Owner
     return AtomicReferenceFieldUpdater.newUpdater(Owner::class.java, T::class.java, p.name)
 }
 
-internal fun getIOIntProperty(name: String, default: Int): Int =
-    try { System.getProperty("io.ktor.utils.io.$name") }
-    catch (e: SecurityException) { null }
-        ?.toIntOrNull() ?: default
+internal fun getIOIntProperty(name: String, default: Int): Int = try {
+    System.getProperty("io.ktor.utils.io.$name")
+} catch (e: SecurityException) {
+    null
+}?.toIntOrNull() ?: default
 
 @Suppress("LoopToCallChain")
 internal fun ByteBuffer.indexOfPartial(sub: ByteBuffer): Int {
     val subPosition = sub.position()
     val subSize = sub.remaining()
     val first = sub[subPosition]
-    val limit = limit()
 
-    outer@for (idx in position() until limit) {
-        if (get(idx) == first) {
-            for (j in 1 until subSize) {
-                if (idx + j == limit) break
-                if (get(idx + j) != sub.get(subPosition + j)) continue@outer
-            }
-            return idx - position()
+    outer@ for (idx in position() until limit()) {
+        if (get(idx) != first) continue
+
+        for (j in 1 until subSize) {
+            if (idx + j == limit()) break
+            if (get(idx + j) != sub.get(subPosition + j)) continue@outer
         }
+
+        return idx - position()
     }
 
     return -1
@@ -82,4 +83,5 @@ internal fun ByteBuffer.putLimited(src: ByteBuffer, limit: Int = limit()): Int {
     return putAtMost(src, limit - src.position())
 }
 
-internal fun ByteArray.asByteBuffer(offset: Int = 0, length: Int = size): ByteBuffer = ByteBuffer.wrap(this, offset, length)
+internal fun ByteArray.asByteBuffer(offset: Int = 0, length: Int = size): ByteBuffer =
+    ByteBuffer.wrap(this, offset, length)

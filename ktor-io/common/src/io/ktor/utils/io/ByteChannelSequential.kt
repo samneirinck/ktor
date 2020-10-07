@@ -821,6 +821,9 @@ public abstract class ByteChannelSequentialBase(
         ensureNotClosed()
     }
 
+    override fun toString(): String =
+        "ByteChannel(hash:${hashCode()}, closed: $closed, Bytes available: $availableForRead)"
+
     final override suspend fun peekTo(
         destination: Memory,
         destinationOffset: Long,

@@ -9,14 +9,20 @@ import io.ktor.util.cio.*
 import kotlinx.coroutines.*
 import io.ktor.utils.io.*
 import io.ktor.utils.io.jvm.javaio.*
+import kotlinx.coroutines.debug.junit4.*
+import org.junit.*
 import java.io.*
 import java.nio.*
 import java.util.zip.*
 import kotlin.test.*
+import kotlin.test.Test
 
 class DeflaterReadChannelTest : CoroutineScope {
     private val testJob = Job()
     override val coroutineContext get() = testJob + Dispatchers.Unconfined
+
+    @get:Rule
+    val timeout = CoroutinesTimeout.seconds(10)
 
     @AfterTest
     fun after() {
@@ -50,11 +56,16 @@ class DeflaterReadChannelTest : CoroutineScope {
     @Test
     fun testSmallPieces() {
         val text = "The quick brown fox jumps over the lazy dog"
-        assertEquals(text, asyncOf(text).toInputStream().reader().readText())
+        val asyncOf = asyncOf(text)
+        println("Channel $asyncOf")
+        assertEquals(text, asyncOf.toInputStream().reader().readText())
+        println("text done")
 
         for (step in 1..text.length) {
             testReadChannel(text, asyncOf(text))
+            println("read done: $step")
             testWriteChannel(text, asyncOf(text))
+            println("write done: $step")
         }
     }
 

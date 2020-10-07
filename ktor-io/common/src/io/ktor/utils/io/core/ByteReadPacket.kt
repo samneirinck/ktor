@@ -65,9 +65,11 @@ public abstract class ByteReadPacketPlatformBase protected constructor(
     pool: ObjectPool<ChunkBuffer>
 ) : ByteReadPacketBase(head, remaining, pool) {
     @Deprecated("Binary compatibility.", level = DeprecationLevel.HIDDEN)
-    public constructor(head: IoBuffer,
-                remaining: Long,
-                pool: ObjectPool<ChunkBuffer>) : this(head as ChunkBuffer, remaining, pool)
+    public constructor(
+        head: IoBuffer,
+        remaining: Long,
+        pool: ObjectPool<ChunkBuffer>
+    ) : this(head as ChunkBuffer, remaining, pool)
 }
 
 public expect fun ByteReadPacket(

@@ -1,14 +1,20 @@
 package io.ktor.utils.io
 
 import io.ktor.utils.io.core.*
+import io.ktor.utils.io.core.Buffer
+import io.ktor.utils.io.internal.*
 import java.nio.*
 
 /**
  * Creates channel for reading from the specified byte buffer.
  */
-public fun ByteReadChannel(content: ByteBuffer): ByteReadChannel = ByteChannelSequentialJVM(
-    IoBuffer(content), autoFlush = false
-)
+public fun ByteReadChannel(content: ByteBuffer): ByteReadChannel {
+    if (content.isEmpty()) return ByteReadChannel.Empty
+    val head = IoBuffer(content).apply {
+        commitWritten(content.remaining())
+    }
+    return ByteChannelSequentialJVM(head, autoFlush = false)
+}
 
 /**
  * Creates buffered channel for asynchronous reading and writing of sequences of bytes.

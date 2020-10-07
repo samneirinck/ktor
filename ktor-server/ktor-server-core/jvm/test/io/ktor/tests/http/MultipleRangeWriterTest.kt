@@ -8,13 +8,19 @@ import io.ktor.features.*
 import kotlinx.coroutines.*
 import io.ktor.utils.io.*
 import io.ktor.utils.io.jvm.javaio.*
+import kotlinx.coroutines.debug.junit4.*
+import org.junit.*
 import kotlin.coroutines.*
 import kotlin.test.*
+import kotlin.test.Test
 
 
 class ByteRangesChannelTest : CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Unconfined
+
+    @get:Rule
+    val timeout = CoroutinesTimeout.seconds(10)
 
     @Test
     fun testAscendingNoLength() {
