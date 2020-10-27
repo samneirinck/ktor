@@ -149,7 +149,7 @@ public class JsonFeature internal constructor(
                 val serializedContent = when (payload) {
                     Unit -> EmptyContent
                     is EmptyContent -> EmptyContent
-                    else -> feature.serializer.write(payload, contentType)
+                    else -> feature.serializer.write(payload, contentType, context.bodyType)
                 }
 
                 proceedWith(serializedContent)
