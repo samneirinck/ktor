@@ -9,6 +9,7 @@ import io.ktor.utils.io.core.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.selects.*
+import kotlinx.coroutines.sync.*
 import java.net.*
 import java.nio.*
 import java.nio.channels.*
@@ -23,35 +24,43 @@ internal class DatagramSendChannel(
 
     @ExperimentalCoroutinesApi
     override val isFull: Boolean
-        get() = false
+        get() = lock.isLocked
 
-    override val onSend: SelectClause2<Datagram, SendChannel<Datagram>>
-        get() = TODO("[DatagramSendChannel] doesn't support [onSend] select clause")
+    private val lock = Mutex()
 
     override fun close(cause: Throwable?): Boolean {
+        if (socket.isClosed) {
+            return false
+        }
+
+        socket.close()
         return true
     }
 
-    @ExperimentalCoroutinesApi
-    override fun invokeOnClose(handler: (cause: Throwable?) -> Unit) {
-        TODO("[DatagramSendChannel] doesn't support [invokeOnClose] operation.")
-    }
 
     override fun offer(element: Datagram): Boolean {
-        val buffer = element.prepareMessage()
-        return channel.send(buffer, element.address) != 0
+        if (!lock.tryLock()) return false
+
+        try {
+            val buffer = element.prepareMessage()
+            return channel.send(buffer, element.address) != 0
+        } finally {
+            lock.unlock()
+        }
     }
 
     override suspend fun send(element: Datagram) {
-        val buffer = element.prepareMessage()
+        lock.withLock {
+            val buffer = element.prepareMessage()
 
-        val rc = channel.send(buffer, element.address)
-        if (rc != 0) {
-            socket.interestOp(SelectInterest.WRITE, false)
-            return
+            val rc = channel.send(buffer, element.address)
+            if (rc != 0) {
+                socket.interestOp(SelectInterest.WRITE, false)
+                return
+            }
+
+            sendSuspend(buffer, element.address)
         }
-
-        sendSuspend(buffer, element.address)
     }
 
     private suspend fun sendSuspend(buffer: ByteBuffer, address: SocketAddress) {
@@ -64,6 +73,14 @@ internal class DatagramSendChannel(
                 break
             }
         }
+    }
+
+    override val onSend: SelectClause2<Datagram, SendChannel<Datagram>>
+        get() = TODO("[DatagramSendChannel] doesn't support [onSend] select clause")
+
+    @ExperimentalCoroutinesApi
+    override fun invokeOnClose(handler: (cause: Throwable?) -> Unit) {
+        TODO("[DatagramSendChannel] doesn't support [invokeOnClose] operation.")
     }
 }
 
