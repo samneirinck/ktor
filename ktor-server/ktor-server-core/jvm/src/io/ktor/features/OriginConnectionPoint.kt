@@ -20,7 +20,7 @@ public val ApplicationRequest.origin: RequestConnectionPoint
 /**
  * A key to install a mutable [RequestConnectionPoint]
  */
-@KtorExperimentalAPI
+@Deprecated("This is going to be deprecated once the mutableConnectionPoint becomes public.")
 public val MutableOriginConnectionPointKey: AttributeKey<MutableOriginConnectionPoint> =
     AttributeKey("MutableOriginConnectionPointKey")
 
