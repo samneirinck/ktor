@@ -4,12 +4,11 @@
 
 package io.ktor.util.cio
 
-import io.ktor.util.*
-import kotlinx.coroutines.*
 import io.ktor.utils.io.*
-import io.ktor.utils.io.jvm.nio.*
 import io.ktor.utils.io.core.*
+import io.ktor.utils.io.jvm.nio.*
 import io.ktor.utils.io.pool.*
+import kotlinx.coroutines.*
 import java.io.*
 import java.nio.*
 import java.nio.channels.*
@@ -41,20 +40,13 @@ public fun File.readChannel(
             }
 
             if (endInclusive == -1L) {
-                @Suppress("DEPRECATION")
-                channel.writeSuspendSession {
-                    while (true) {
-                        val buffer = request(1)
-                        if (buffer == null) {
-                            channel.flush()
-                            tryAwait(1)
-                            continue
-                        }
-
-                        val rc = fileChannel.read(buffer)
-                        if (rc == -1) break
-                        written(rc)
+                while (true) {
+                    var rc = 0
+                    channel.write {
+                        rc = fileChannel.read(it)
                     }
+
+                    if (rc == -1) break
                 }
 
                 return@use

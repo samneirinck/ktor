@@ -85,25 +85,19 @@ public suspend fun ByteWriteChannel.writeDoubleLittleEndian(value: Double) {
 
 @PublishedApi
 @Suppress("DEPRECATION_ERROR")
-internal inline fun <T> ByteReadChannel.toLittleEndian(value: T, reverseBlock: T.() -> T): T {
-    return when (readByteOrder) {
-        ByteOrder.LITTLE_ENDIAN -> value
-        else -> value.reverseBlock()
-    }
+internal inline fun <T> ByteReadChannel.toLittleEndian(value: T, reverseBlock: T.() -> T): T = when (readByteOrder) {
+    ByteOrder.LITTLE_ENDIAN -> value
+    else -> value.reverseBlock()
 }
 
 @Suppress("DEPRECATION_ERROR")
-private inline fun <T> ByteWriteChannel.toLittleEndian(value: T, reverseBlock: T.() -> T): T {
-    return when (writeByteOrder) {
-        ByteOrder.LITTLE_ENDIAN -> value
-        else -> value.reverseBlock()
-    }
+private inline fun <T> ByteWriteChannel.toLittleEndian(value: T, reverseBlock: T.() -> T): T = when (writeByteOrder) {
+    ByteOrder.LITTLE_ENDIAN -> value
+    else -> value.reverseBlock()
 }
 
 @PublishedApi
-internal inline fun <T> T.reverseIfNeeded(byteOrder: ByteOrder, reverseBlock: T.() -> T): T {
-    return when (byteOrder) {
-        ByteOrder.BIG_ENDIAN -> this
-        else -> reverseBlock()
-    }
+internal inline fun <T> T.reverseIfNeeded(byteOrder: ByteOrder, reverseBlock: T.() -> T): T = when (byteOrder) {
+    ByteOrder.BIG_ENDIAN -> this
+    else -> reverseBlock()
 }

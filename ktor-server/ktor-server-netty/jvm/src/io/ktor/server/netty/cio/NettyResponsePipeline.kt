@@ -246,6 +246,8 @@ internal class NettyResponsePipeline(private val dst: ChannelHandlerContext,
         var unflushedBytes = 0
         var lastFuture: ChannelFuture = requestMessageFuture
 
+        TODO()
+
         channel.lookAheadSuspend {
             while (true) {
                 val buffer = request(0, 1)
@@ -287,6 +289,8 @@ internal class NettyResponsePipeline(private val dst: ChannelHandlerContext,
 
         var unflushedBytes = 0
         var lastFuture: ChannelFuture = requestMessageFuture
+
+        TODO()
 
         channel.lookAheadSuspend {
             while (true) {

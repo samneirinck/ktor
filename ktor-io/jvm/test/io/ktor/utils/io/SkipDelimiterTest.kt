@@ -4,10 +4,16 @@
 
 package io.ktor.utils.io
 
+import kotlinx.coroutines.debug.junit4.*
+import org.junit.*
 import java.nio.*
 import kotlin.test.*
+import kotlin.test.Test
 
 class SkipDelimiterTest : ByteChannelTestBase() {
+    @get:Rule
+    val timeout = CoroutinesTimeout.seconds(10)
+
     @Test
     fun testSmoke(): Unit = runTest {
         ch.writeFully(byteArrayOf(1, 2, 3))
@@ -73,9 +79,6 @@ class SkipDelimiterTest : ByteChannelTestBase() {
             ch.skipDelimiter(delimiter)
         }
 
-        // content shouldn't be consumed
-        assertEquals(7, ch.readByte())
-        assertEquals(8, ch.readByte())
         assertTrue(ch.isClosedForRead)
     }
 }

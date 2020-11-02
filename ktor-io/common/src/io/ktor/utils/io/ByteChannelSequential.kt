@@ -50,7 +50,7 @@ public abstract class ByteChannelSequentialBase(
     @Suppress("NOTHING_TO_INLINE")
     private inline fun totalPending(): Int = availableForRead + writable.size
 
-    private val flushSize: Int get() = flushBuffer.size
+    internal val flushSize: Int get() = flushBuffer.size
 
     override val availableForRead: Int
         get() = flushSize + readable.remaining.toInt()
@@ -78,7 +78,7 @@ public abstract class ByteChannelSequentialBase(
         private set
 
     private val flushMutex = SynchronizedObject()
-    private val flushBuffer: BytePacketBuilder = BytePacketBuilder()
+    internal val flushBuffer: BytePacketBuilder = BytePacketBuilder(pool = pool)
 
     internal suspend fun awaitAtLeastNBytesAvailableForWrite(count: Int) {
         while (availableForWrite < count && !closed) {
@@ -116,7 +116,7 @@ public abstract class ByteChannelSequentialBase(
      *
      * This method is reader-only safe.
      */
-    private fun prepareFlushedBytes() {
+    internal fun prepareFlushedBytes() {
         synchronized(flushMutex) {
             readable.unsafeAppend(flushBuffer)
         }
@@ -145,13 +145,13 @@ public abstract class ByteChannelSequentialBase(
         afterWrite(1)
     }
 
-    private inline fun <T : Any> reverseWrite(value: () -> T, reversed: () -> T): T {
-        @Suppress("DEPRECATION_ERROR")
-        return if (writeByteOrder == ByteOrder.BIG_ENDIAN) {
-            value()
-        } else {
-            reversed()
-        }
+    @Suppress("DEPRECATION_ERROR")
+    private inline fun <T : Any> reverseWrite(
+        value: () -> T, reversed: () -> T
+    ): T = if (writeByteOrder == ByteOrder.BIG_ENDIAN) {
+        value()
+    } else {
+        reversed()
     }
 
     override suspend fun writeShort(s: Short) {
@@ -427,7 +427,7 @@ public abstract class ByteChannelSequentialBase(
     override suspend fun readRemaining(limit: Long, headerSizeHint: Int): ByteReadPacket {
         ensureNotFailed()
 
-        val builder = BytePacketBuilder(headerSizeHint)
+        val builder = BytePacketBuilder(headerSizeHint, pool = readable.pool)
 
         val size = minOf(limit, readable.remaining)
         builder.writePacket(readable, size)

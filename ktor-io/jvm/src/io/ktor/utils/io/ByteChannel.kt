@@ -2,6 +2,7 @@ package io.ktor.utils.io
 
 import io.ktor.utils.io.core.*
 import io.ktor.utils.io.core.Buffer
+import io.ktor.utils.io.core.internal.*
 import io.ktor.utils.io.internal.*
 import java.nio.*
 
@@ -13,7 +14,10 @@ public fun ByteReadChannel(content: ByteBuffer): ByteReadChannel {
     val head = IoBuffer(content).apply {
         commitWritten(content.remaining())
     }
-    return ByteChannelSequentialJVM(head, autoFlush = false)
+
+    return ByteChannelSequentialJVM(head, autoFlush = false, pool = ChunkBuffer.NoPoolManuallyManaged).apply {
+        close()
+    }
 }
 
 /**

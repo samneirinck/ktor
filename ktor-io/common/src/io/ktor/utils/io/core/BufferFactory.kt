@@ -82,6 +82,9 @@ internal class DefaultBufferPool(
         check(instance !== Buffer.Empty) { "Empty instance couldn't be recycled" }
         check(instance !== ChunkBuffer.Empty) { "Empty instance couldn't be recycled" }
 
+        check(instance.memory.size32 == bufferSize) {
+            "This buffer is from different pool. Cause buffer size is different: ${instance.memory.size32} instead of $bufferSize"
+        }
         check(instance.referenceCount == 0) { "Unable to clear buffer: it is still in use." }
         check(instance.next == null) { "Recycled instance shouldn't be a part of a chain." }
         check(instance.origin == null) { "Recycled instance shouldn't be a view or another buffer." }

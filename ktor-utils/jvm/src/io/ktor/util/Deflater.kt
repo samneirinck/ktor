@@ -76,7 +76,8 @@ public fun ByteReadChannel.deflated(
 
         while (!isClosedForRead) {
             input.clear()
-            if (readAvailable(input) <= 0) continue
+            val readAvailable = readAvailable(input)
+            if (readAvailable <= 0) continue
             input.flip()
 
             crc.updateKeepPosition(input)

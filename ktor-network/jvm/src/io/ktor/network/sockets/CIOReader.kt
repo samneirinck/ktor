@@ -6,12 +6,11 @@ package io.ktor.network.sockets
 
 import io.ktor.network.selector.*
 import io.ktor.network.util.*
-import kotlinx.coroutines.*
 import io.ktor.utils.io.*
 import io.ktor.utils.io.ByteChannel
 import io.ktor.utils.io.core.*
-import io.ktor.utils.io.nio.*
 import io.ktor.utils.io.pool.*
+import kotlinx.coroutines.*
 import java.nio.*
 import java.nio.channels.*
 
@@ -73,34 +72,25 @@ internal fun CoroutineScope.attachForReadingDirectImpl(
     try {
         selectable.interestOp(SelectInterest.READ, false)
 
-        channel.writeSuspendSession {
-            while (true) {
-                var rc = 0
+        while (true) {
+            var rc = 0
 
-                withSocketTimeout(socketOptions?.socketTimeout ?: INFINITE_TIMEOUT_MS) {
-                    do {
-                        val buffer = request(1)
-                        if (buffer == null) {
-                            if (channel.isClosedForWrite) break
-                            channel.flush()
-                            tryAwait(1)
-                            continue
-                        }
+            withSocketTimeout(socketOptions?.socketTimeout ?: INFINITE_TIMEOUT_MS) {
+                do {
+                    channel.write {
+                        rc = nioChannel.read(it)
+                    }
 
-                        rc = nioChannel.read(buffer)
-                        if (rc == 0) {
-                            channel.flush()
-                            selectable.interestOp(SelectInterest.READ, true)
-                            selector.select(selectable, SelectInterest.READ)
-                        }
-                    } while (rc == 0)
-                }
+                    if (rc == 0) {
+                        channel.flush()
+                        selectable.interestOp(SelectInterest.READ, true)
+                        selector.select(selectable, SelectInterest.READ)
+                    }
+                } while (rc == 0)
+            }
 
-                if (rc == -1) {
-                    break
-                } else {
-                    written(rc)
-                }
+            if (rc == -1) {
+                break
             }
         }
 

@@ -102,6 +102,15 @@ public open class ChunkBuffer internal constructor(memory: Memory, origin: Chunk
         }
     }
 
+    final override fun reset() {
+        require(origin == null) { "Unable to reset buffer with origin" }
+
+        super.reset()
+        @Suppress("DEPRECATION")
+        attachment = null
+        nextRef.value = null
+    }
+
     /**
      * Release ref-count.
      * @return `true` if the last usage was released
@@ -111,15 +120,6 @@ public open class ChunkBuffer internal constructor(memory: Memory, origin: Chunk
             if (old <= 0) throw IllegalStateException("Unable to release: it is already released.")
             old - 1
         } == 0
-    }
-
-    final override fun reset() {
-        require(origin == null) { "Unable to reset buffer with origin" }
-
-        super.reset()
-        @Suppress("DEPRECATION")
-        attachment = null
-        nextRef.value = null
     }
 
     public companion object {

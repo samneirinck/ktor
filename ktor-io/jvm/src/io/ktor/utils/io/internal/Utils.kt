@@ -1,19 +1,10 @@
 package io.ktor.utils.io.internal
 
-import kotlinx.coroutines.*
 import java.nio.*
 import java.util.concurrent.atomic.*
 import kotlin.reflect.*
 
 internal fun ByteBuffer.isEmpty() = !hasRemaining()
-
-internal inline fun <reified Owner : Any> longUpdater(p: KProperty1<Owner, Long>): AtomicLongFieldUpdater<Owner> {
-    return AtomicLongFieldUpdater.newUpdater(Owner::class.java, p.name)
-}
-
-internal inline fun <reified Owner : Any> intUpdater(p: KProperty1<Owner, Int>): AtomicIntegerFieldUpdater<Owner> {
-    return AtomicIntegerFieldUpdater.newUpdater(Owner::class.java, p.name)
-}
 
 internal inline fun <reified Owner : Any, reified T> updater(p: KProperty1<Owner, T>): AtomicReferenceFieldUpdater<Owner, T> {
     return AtomicReferenceFieldUpdater.newUpdater(Owner::class.java, T::class.java, p.name)
@@ -25,7 +16,6 @@ internal fun getIOIntProperty(name: String, default: Int): Int = try {
     null
 }?.toIntOrNull() ?: default
 
-@Suppress("LoopToCallChain")
 internal fun ByteBuffer.indexOfPartial(sub: ByteBuffer): Int {
     val subPosition = sub.position()
     val subSize = sub.remaining()
@@ -45,7 +35,6 @@ internal fun ByteBuffer.indexOfPartial(sub: ByteBuffer): Int {
     return -1
 }
 
-@Suppress("LoopToCallChain")
 internal fun ByteBuffer.startsWith(prefix: ByteBuffer, prefixSkip: Int = 0): Boolean {
     val size = minOf(remaining(), prefix.remaining() - prefixSkip)
     if (size <= 0) return false

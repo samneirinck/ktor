@@ -145,14 +145,14 @@ private suspend fun Input.copyTo(channel: ByteWriteChannel) {
         return
     }
 
-    channel.writeSuspendSession {
-        while (!this@copyTo.endOfInput) {
-            tryAwait(1)
-            val buffer = request(1)!!
-            val size = this@copyTo.readAvailable(buffer)
+    while (!endOfInput) {
+        channel.write { freeSpace, startOffset, endExclusive ->
+            val count = readAvailable(freeSpace, startOffset, endExclusive).toInt()
+            if (count < 0) {
+                return@write 0
+            }
 
-            if (size < 0) continue
-            written(size)
+            count
         }
     }
 }

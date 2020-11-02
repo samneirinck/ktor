@@ -10,8 +10,8 @@ import java.nio.*
 
 open class JvmByteChannelSmokeTest : ByteChannelSmokeTest() {
 
-    @get:Rule
-    val timeout = Timeout(10, TimeUnit.SECONDS)
+//    @get:Rule
+//    val timeout = Timeout(10, TimeUnit.SECONDS)
 
     @Test
     fun testReadAndWriteFullyByteBuffer() {
