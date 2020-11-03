@@ -16,6 +16,8 @@ public open class ChunkBuffer internal constructor(memory: Memory, origin: Chunk
     private val nextRef: AtomicRef<ChunkBuffer?> = atomic(null)
     private val refCount = atomic(1)
 
+    private val pool: ObjectPool<ChunkBuffer> = TODO()
+
     /**
      * Reference to an origin buffer view this was copied from
      */
@@ -56,15 +58,18 @@ public open class ChunkBuffer internal constructor(memory: Memory, origin: Chunk
     }
 
     public open fun release(pool: ObjectPool<ChunkBuffer>) {
-        if (release()) {
-            val origin = origin
-            if (origin != null) {
-                unlink()
-                origin.release(pool)
-            } else {
-                pool.recycle(this)
-            }
+        if (!release()) {
+            return
         }
+
+        val origin = origin
+        if (origin != null) {
+            unlink()
+            origin.release(this.pool)
+            return
+        }
+
+        this.pool.recycle(this)
     }
 
     internal fun unlink() {
