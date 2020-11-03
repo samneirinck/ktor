@@ -11,6 +11,7 @@ import io.ktor.utils.io.core.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.debug.junit4.*
 import org.junit.*
+import java.net.*
 import kotlin.coroutines.*
 import kotlin.io.use
 import kotlin.test.*
@@ -34,7 +35,7 @@ class UDPSocketTest : CoroutineScope {
 
     @Test
     fun testBroadcastFails(): Unit = runBlocking {
-        assertFails {
+        assertFailsWith<SocketException>("Permission denied") {
             val socket = aSocket(selector)
                 .udp()
                 .bind()

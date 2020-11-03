@@ -5,7 +5,9 @@
 package io.ktor.network.sockets
 
 import io.ktor.network.selector.*
+import io.ktor.network.util.*
 import io.ktor.utils.io.core.*
+import io.ktor.utils.io.pool.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.selects.*
@@ -24,7 +26,7 @@ internal class DatagramSendChannel(
 
     @ExperimentalCoroutinesApi
     override val isFull: Boolean
-        get() = lock.isLocked
+        get() = if (isClosedForSend) false else lock.isLocked
 
     private val lock = Mutex()
 
@@ -42,8 +44,10 @@ internal class DatagramSendChannel(
         if (!lock.tryLock()) return false
 
         try {
-            val buffer = element.prepareMessage()
-            return channel.send(buffer, element.address) != 0
+            DefaultDatagramByteBufferPool.useInstance { buffer ->
+                element.writeMessageTo(buffer)
+                return channel.send(buffer, element.address) != 0
+            }
         } finally {
             lock.unlock()
         }
@@ -51,15 +55,18 @@ internal class DatagramSendChannel(
 
     override suspend fun send(element: Datagram) {
         lock.withLock {
-            val buffer = element.prepareMessage()
+            DefaultDatagramByteBufferPool.useInstance { buffer ->
+                element.writeMessageTo(buffer)
 
-            val rc = channel.send(buffer, element.address)
-            if (rc != 0) {
-                socket.interestOp(SelectInterest.WRITE, false)
-                return
+                val rc = channel.send(buffer, element.address)
+                if (rc != 0) {
+                    socket.interestOp(SelectInterest.WRITE, false)
+                    return
+                }
+
+                sendSuspend(buffer, element.address)
             }
 
-            sendSuspend(buffer, element.address)
         }
     }
 
@@ -84,10 +91,7 @@ internal class DatagramSendChannel(
     }
 }
 
-private fun Datagram.prepareMessage(): ByteBuffer {
-    val buffer = ByteBuffer.allocateDirect(packet.remaining.toInt())
+private fun Datagram.writeMessageTo(buffer: ByteBuffer) {
     packet.readAvailable(buffer)
     buffer.flip()
-
-    return buffer
 }
