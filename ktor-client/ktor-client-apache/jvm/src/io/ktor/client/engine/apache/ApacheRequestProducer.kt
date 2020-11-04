@@ -164,7 +164,7 @@ internal class ApacheRequestProducer(
     }
 
     private fun prepareBody(bodyChannel: ByteReadChannel): Job {
-        val result = GlobalScope.launch(callContext) {
+        val result = GlobalScope.launch(callContext + Dispatchers.Unconfined) {
             while (!bodyChannel.isClosedForRead) {
                 val buffer = HttpClientDefaultPool.borrow()
                 try {
